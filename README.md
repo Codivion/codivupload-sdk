@@ -2,7 +2,7 @@
 
 Official TypeScript/JavaScript SDK for [CodivUpload](https://codivupload.com) — publish, schedule, and manage social media posts across 9 platforms.
 
-Auto-generated from the [CodivUpload OpenAPI spec](https://api.codivupload.com/public-openapi.json). Full type safety and autocomplete.
+Full type safety and autocomplete. Auto-generated from the [OpenAPI spec](https://api.codivupload.com/public-openapi.json).
 
 ## Install
 
@@ -13,114 +13,142 @@ npm install codivupload
 ## Quick Start
 
 ```ts
-import { createCodivUpload } from "codivupload";
-import { postsPosts, getAgencyProfiles } from "codivupload";
+import CodivUpload from "codivupload";
 
-// Create client
-const client = createCodivUpload("cdv_your_api_key");
+const codiv = new CodivUpload("cdv_your_api_key");
 
 // Publish to multiple platforms
-const { data } = await postsPosts({
-  client,
-  body: {
-    platforms: ["tiktok", "instagram", "youtube"],
-    post_type: "reel",
-    description: "New product launch! 🚀",
-    media_urls: ["https://cdn.example.com/video.mp4"],
-  },
+const post = await codiv.posts.create({
+  platforms: ["tiktok", "instagram", "youtube"],
+  description: "New product launch! 🚀",
+  media_urls: ["https://cdn.example.com/video.mp4"],
 });
 
-console.log(data);
+console.log(post);
 // { id: "post_k8m2v9x1", status: "publishing", platforms: [...] }
 ```
 
-## Available Operations
+## Posts
 
-### Posts
 ```ts
-import { postsPosts, getPosts } from "codivupload";
+// Create / publish
+const post = await codiv.posts.create({
+  platforms: ["tiktok", "instagram"],
+  description: "Hello world!",
+  media_urls: ["https://cdn.example.com/video.mp4"],
+});
 
-// Create / publish a post
-await postsPosts({ client, body: { ... } });
+// Schedule for later
+const scheduled = await codiv.posts.schedule({
+  platforms: ["youtube", "linkedin"],
+  description: "Launching tomorrow",
+  scheduled_date: "2026-04-05T14:00:00Z",
+});
 
 // List posts
-const { data } = await getPosts({ client, query: { limit: 20 } });
+const posts = await codiv.posts.list({ limit: 20, status: "published" });
+
+// Get single post
+const single = await codiv.posts.get("post_k8m2v9x1");
+
+// Update
+await codiv.posts.update("post_k8m2v9x1", { description: "Updated caption" });
+
+// Delete
+await codiv.posts.delete("post_k8m2v9x1");
 ```
 
-### Profiles
+## Profiles
+
 ```ts
-import { getAgencyProfiles, postAgencyProfiles } from "codivupload";
+// List all profiles
+const profiles = await codiv.profiles.list();
 
-// List profiles
-const { data } = await getAgencyProfiles({ client });
-
-// Create profile
-await postAgencyProfiles({ client, body: { username: "my_brand", profile_name: "My Brand" } });
-```
-
-### Media
-```ts
-import { postUploadMedia, getAgencyMedia } from "codivupload";
-
-// Upload media to CDN
-const { data } = await postUploadMedia({ client, body: { media_url: "https://..." } });
-
-// List media assets
-const { data: media } = await getAgencyMedia({ client });
-```
-
-### Live Streaming
-```ts
-import { getBroadcasts, postBroadcasts } from "codivupload";
-
-// List broadcasts
-const { data } = await getBroadcasts({ client });
-
-// Start a 24/7 live stream
-await postBroadcasts({
-  client,
-  body: {
-    profile_name: "my_channel",
-    title: "Lo-fi Radio 24/7",
-    media_url: "https://cdn.example.com/lofi-mix.mp4",
-    loop: true,
-  },
+// Create a new profile
+const profile = await codiv.profiles.create({
+  username: "my_brand",
+  profile_name: "My Brand",
 });
+
+// Delete
+await codiv.profiles.delete("profile-uuid");
+```
+
+## Media
+
+```ts
+// Upload to CDN
+const media = await codiv.media.upload("https://example.com/video.mp4");
+
+// List assets
+const assets = await codiv.media.list();
+
+// Get / delete
+const asset = await codiv.media.get("media-uuid");
+await codiv.media.delete("media-uuid");
+```
+
+## Live Streaming
+
+```ts
+// List broadcasts
+const streams = await codiv.broadcasts.list();
+
+// Start 24/7 live stream
+const stream = await codiv.broadcasts.create({
+  profile_name: "my_channel",
+  title: "Lo-fi Radio 24/7",
+  media_url: "https://cdn.example.com/lofi-mix.mp4",
+  loop: true,
+});
+
+// Stop a broadcast
+await codiv.broadcasts.stop("broadcast-uuid");
+```
+
+## Playlists
+
+```ts
+const playlists = await codiv.playlists.list();
+const playlist = await codiv.playlists.get("playlist-uuid");
 ```
 
 ## Platform-Specific Overrides
 
 ```ts
-await postsPosts({
-  client,
-  body: {
-    platforms: ["tiktok", "instagram", "youtube"],
-    description: "Check this out!",
-    media_urls: ["https://cdn.example.com/video.mp4"],
-    // TikTok overrides
-    tiktok_privacy_level: 0,
-    tiktok_disable_duet: false,
-    // Instagram overrides
-    instagram_media_type: "REELS",
-    // YouTube overrides
-    youtube_type: "short",
-    youtube_privacy: "public",
-    youtube_category_id: "22",
-  },
+await codiv.posts.create({
+  platforms: ["tiktok", "instagram", "youtube"],
+  description: "Check this out!",
+  media_urls: ["https://cdn.example.com/video.mp4"],
+  // TikTok
+  tiktok_privacy_level: 0,        // 0=public, 1=friends, 2=private
+  tiktok_disable_duet: false,
+  // Instagram
+  instagram_media_type: "REELS",
+  instagram_location_id: "12345",
+  // YouTube
+  youtube_type: "short",
+  youtube_privacy: "public",
+  youtube_category_id: "22",
+  youtube_tags: ["product", "launch"],
 });
 ```
 
-## Scheduling
+## Error Handling
 
 ```ts
-await postsPosts({
-  client,
-  body: {
-    platforms: ["linkedin", "x"],
-    description: "Scheduled announcement",
-    scheduled_date: "2026-04-05T14:00:00Z",
-  },
-});
+import CodivUpload, { CodivUploadError } from "codivupload";
+
+const codiv = new CodivUpload("cdv_your_api_key");
+
+try {
+  await codiv.posts.create({ platforms: ["tiktok"], description: "Hi" });
+} catch (err) {
+  if (err instanceof CodivUploadError) {
+    console.error(err.message);  // "Rate limit exceeded"
+    console.error(err.status);   // 429
+  }
+}
 ```
 
 ## Get Your API Key
