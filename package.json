@@ -1,0 +1,68 @@
+{
+  "name": "codivupload",
+  "version": "1.0.0",
+  "description": "Official TypeScript/JavaScript SDK for CodivUpload API — publish, schedule, and manage social media posts across 9 platforms.",
+  "keywords": [
+    "codivupload",
+    "sdk",
+    "social-media",
+    "social-media-automation",
+    "social-media-scheduling",
+    "video-automation",
+    "youtube-automation",
+    "tiktok-automation",
+    "instagram-automation",
+    "linkedin-automation",
+    "live-stream",
+    "youtube-live-stream",
+    "cross-posting",
+    "multi-platform",
+    "content-publishing",
+    "whitelabel-api",
+    "api-client",
+    "typescript",
+    "rest-api"
+  ],
+  "author": "Codivion LLC <support@codivupload.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Codivion/codivupload-sdk"
+  },
+  "homepage": "https://codivupload.com",
+  "bugs": {
+    "url": "https://github.com/Codivion/codivupload-sdk/issues"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "openapi-ts -i https://api.codivupload.com/public-openapi.json -o src/generated -c @hey-api/client-fetch",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "prepublishOnly": "npm run generate && npm run build"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.70.0",
+    "@hey-api/client-fetch": "^0.10.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0"
+  },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.10.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
